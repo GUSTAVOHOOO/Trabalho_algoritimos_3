@@ -3,16 +3,16 @@
 #include "matriz.h"
 
 // Gera e inicializa nós cabeçalhos para linhas e colunas
-static Node* criarNosCabecaCompletos(int totalLinhas, int totalColunas) {
-    Node *cabecaMatriz = (Node*) malloc(sizeof(Node));
+static No* criarNosCabecaCompletos(int totalLinhas, int totalColunas) {
+    No *cabecaMatriz = (No*) malloc(sizeof(No));
     if (!cabecaMatriz) return NULL;
     cabecaMatriz->linha = -1;
     cabecaMatriz->coluna = -1;
 
     // Cria cabeçalhos de coluna
-    Node *cursor = cabecaMatriz;
+    No *cursor = cabecaMatriz;
     for (int col = 1; col <= totalColunas; col++) {
-        Node *noColuna = (Node*) malloc(sizeof(Node));
+        No *noColuna = (No*) malloc(sizeof(No));
         if (!noColuna) return NULL; // não libera anteriores por simplicidade
         noColuna->linha = -1;
         noColuna->coluna = col;
@@ -26,7 +26,7 @@ static Node* criarNosCabecaCompletos(int totalLinhas, int totalColunas) {
     // Cria cabeçalhos de linha
     cursor = cabecaMatriz;
     for (int lin = 1; lin <= totalLinhas; lin++) {
-        Node *noLinha = (Node*) malloc(sizeof(Node));
+        No *noLinha = (No*) malloc(sizeof(No));
         if (!noLinha) return NULL;
         noLinha->linha = lin;
         noLinha->coluna = -1;
@@ -41,10 +41,10 @@ static Node* criarNosCabecaCompletos(int totalLinhas, int totalColunas) {
 }
 
 // Cria uma matriz esparsa com dimenções definidas
-Matrix* matriz_criar(int linhas, int colunas) {
+Matriz* matriz_criar(int linhas, int colunas) {
     if (linhas <= 0 || colunas <= 0) return NULL;
 
-    Matrix *mat = (Matrix*) malloc(sizeof(Matrix));
+    Matriz *mat = (Matriz*) malloc(sizeof(Matriz));
     if (!mat) return NULL;
 
     mat->linhas = linhas;
@@ -58,23 +58,23 @@ Matrix* matriz_criar(int linhas, int colunas) {
 }
 
 // Insere ou remove valor na posição indicada
-void matriz_definir_valor(Matrix *m, int linhaPos, int colunaPos, double valor) {
+void matriz_definir_valor(Matriz *m, int linhaPos, int colunaPos, double valor) {
     if (!m || linhaPos <= 0 || linhaPos > m->linhas || colunaPos <= 0 || colunaPos > m->colunas)
         return;
 
     // Localiza cabeçalho de linha
-    Node *antLinha = m->cabeca;
+    No *antLinha = m->cabeca;
     for (int i = 0; i < linhaPos; i++) antLinha = antLinha->abaixo;
     while (antLinha->direita->coluna != -1 && antLinha->direita->coluna < colunaPos)
         antLinha = antLinha->direita;
 
     // Localiza cabeçalho de coluna
-    Node *antColuna = m->cabeca;
+    No *antColuna = m->cabeca;
     for (int j = 0; j < colunaPos; j++) antColuna = antColuna->direita;
     while (antColuna->abaixo->linha != -1 && antColuna->abaixo->linha < linhaPos)
         antColuna = antColuna->abaixo;
 
-    Node *atual = antLinha->direita;
+    No *atual = antLinha->direita;
     // Se já existe nó naquela posição
     if (atual->linha == linhaPos && atual->coluna == colunaPos) {
         if (valor == 0.0) {
@@ -88,7 +88,7 @@ void matriz_definir_valor(Matrix *m, int linhaPos, int colunaPos, double valor) 
         }
     } else if (valor != 0.0) {
         // Cria novo nó para valor não-nulo
-        Node *novoNo = (Node*) malloc(sizeof(Node));
+        No *novoNo = (No*) malloc(sizeof(No));
         if (!novoNo) return;
         novoNo->linha = linhaPos;
         novoNo->coluna = colunaPos;
@@ -104,11 +104,11 @@ void matriz_definir_valor(Matrix *m, int linhaPos, int colunaPos, double valor) 
 }
 
 // Obtém valor na posição especificada
-double matriz_obter_valor(Matrix *m, int linhaPos, int colunaPos) {
+double matriz_obter_valor(Matriz *m, int linhaPos, int colunaPos) {
     if (!m || linhaPos <= 0 || linhaPos > m->linhas || colunaPos <= 0 || colunaPos > m->colunas)
         return 0.0;
 
-    Node *cursor = m->cabeca;
+    No *cursor = m->cabeca;
     for (int i = 0; i < linhaPos; i++) cursor = cursor->abaixo;
     cursor = cursor->direita;
     while (cursor->coluna != -1 && cursor->coluna < colunaPos)
@@ -121,16 +121,16 @@ double matriz_obter_valor(Matrix *m, int linhaPos, int colunaPos) {
 }
 
 // Exibe a matriz completa, impressa linha a linha
-void matriz_mostrar_na_tela(Matrix *m) {
+void matriz_mostrar_na_tela(Matriz *m) {
     if (!m) {
         printf("Matriz não inicializada ou vazia.\n");
         return;
     }
 
     printf("\nMatriz %dx%d:\n", m->linhas, m->colunas);
-    Node *cabLinha = m->cabeca->abaixo;
+    No *cabLinha = m->cabeca->abaixo;
     for (int i = 1; i <= m->linhas; i++) {
-        Node *pos = cabLinha->direita;
+        No *pos = cabLinha->direita;
         for (int j = 1; j <= m->colunas; j++) {
             if (pos->linha == i && pos->coluna == j) {
                 printf("%8.2f ", pos->valor);
@@ -147,17 +147,17 @@ void matriz_mostrar_na_tela(Matrix *m) {
 }
 
 // Apaga e libera toda a estrutura da matriz
-void matriz_apagar_completa(Matrix **pm) {
+void matriz_apagar_completa(Matriz **pm) {
     if (!pm || !*pm) return;
 
-    Matrix *mk = *pm;
-    Node *linCab = mk->cabeca->abaixo;
+    Matriz *mk = *pm;
+    No *linCab = mk->cabeca->abaixo;
 
     // Libera nós de dados
     while (linCab->linha != -1) {
-        Node *it = linCab->direita;
+        No *it = linCab->direita;
         while (it->coluna != -1) {
-            Node *temp = it;
+            No *temp = it;
             it = it->direita;
             free(temp);
         }
@@ -165,16 +165,16 @@ void matriz_apagar_completa(Matrix **pm) {
     }
 
     // Libera cabeçalhos de linha
-    Node *tln = mk->cabeca->abaixo;
+    No *tln = mk->cabeca->abaixo;
     while (tln->linha != -1) {
-        Node *prox = tln->abaixo;
+        No *prox = tln->abaixo;
         free(tln);
         tln = prox;
     }
     // Libera cabeçalhos de coluna
-    Node *tcl = mk->cabeca->direita;
+    No *tcl = mk->cabeca->direita;
     while (tcl->coluna != -1) {
-        Node *prox = tcl->direita;
+        No *prox = tcl->direita;
         free(tcl);
         tcl = prox;
     }
@@ -184,14 +184,12 @@ void matriz_apagar_completa(Matrix **pm) {
     *pm = NULL;
 }
 
-
-
 // Busca um nó com o valor exato na matriz
-Node* matriz_buscar_valor(Matrix *matriz, double valor) {
+No* matriz_buscar_valor(Matriz *matriz, double valor) {
     if (!matriz) return NULL;
-    Node *linhaCab = matriz->cabeca->abaixo;
+    No *linhaCab = matriz->cabeca->abaixo;
     while (linhaCab->linha != -1) {
-        Node *cursor = linhaCab->direita;
+        No *cursor = linhaCab->direita;
         while (cursor->coluna != -1) {
             if (cursor->valor == valor)
                 return cursor;
@@ -203,7 +201,7 @@ Node* matriz_buscar_valor(Matrix *matriz, double valor) {
 }
 
 // Imprime os vizinhos (cima, baixo, esquerda, direita) do nó na posição (linha, coluna)
-void imprimir_vizinhos(Matrix *matriz, int linha, int coluna) {
+void imprimir_vizinhos(Matriz *matriz, int linha, int coluna) {
     if (!matriz || linha <= 0 || linha > matriz->linhas || coluna <= 0 || coluna > matriz->colunas) {
         printf("Coordenadas fora dos limites da matriz.\n");
         return;
