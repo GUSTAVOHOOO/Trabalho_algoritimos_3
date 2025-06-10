@@ -84,7 +84,7 @@ void exibir_menu() {
 }
 
 int main() {
-    Matrix *matriz = NULL;
+    Matriz *matriz = NULL;
     int opcao;
 
     do {
@@ -162,7 +162,7 @@ int main() {
                 double valor;
                 printf("Digite o valor a ser buscado: ");
                 scanf("%lf", &valor);
-                Node *resultado = matriz_buscar_valor(matriz, valor);
+                No *resultado = matriz_buscar_valor(matriz, valor);
                 if (resultado)
                     printf("Valor %.2lf encontrado na posição (%d, %d).\n", valor, resultado->linha, resultado->coluna);
                 else
